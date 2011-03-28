@@ -229,15 +229,3 @@ class ExcelXMLMangler(object):
             etree.tostring(xml.xpath(\
                 '/pack_rel:Relationships', namespaces=self.NAMESPACES)[0])
         return new_relation_id
-
-if __name__ == '__main__':
-    mangler = ExcelXMLMangler('lala.xlsm')
-    mangler.copySheet('Spider Chart Example', 'bla2')
-    mangler.moveSheet('Spider Chart Example', str(99))
-    import pdb;pdb.set_trace()
-    mangler.addRows('bla2', [('example1', 'url'),
-                             ('example3', 'string')],
-                    [[('http://www.do3.cc', 'do3cc'), 'cool3'],
-                     [('http://www.heise.de', 'cool4'), 'cool6']])
-    #mangler.replaceValue('bla2', 'exampleproduct', 'beeeer')
-    mangler.save('target.xmlm')
