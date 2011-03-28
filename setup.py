@@ -26,6 +26,7 @@ setup(name = name,
         'lxml',
       ],
       test_suite="tests",
+      tests_require=['unittest2'],
       classifiers = [
       ],
       entry_points = '''

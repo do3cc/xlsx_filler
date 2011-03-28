@@ -31,7 +31,7 @@ class ExcelXMLMangler(object):
         column = row.xpath('//main:c[main:v=\'%s\']/main:v' % hook,
                            namespaces=self.NAMESPACES)[0]
         column.text = str(string_id)
-        rel_name = self.calc_rel_file(os.path.join('xl', sheet_filename))
+        rel_name = self.calc_rel_file(sheet_filename)
         rid = self.new_relation(rel_name,
                                 {'Type': 'http://schemas.openxmlformats.org'
                                  '/officeDocument/2006/relationships/'
@@ -62,8 +62,8 @@ class ExcelXMLMangler(object):
                 self.xl_relationships[relation_id]['Target'])]
             xml = etree.fromstring(sheet_file)
             self.sheets[name] = {'relation_id': relation_id,
-                                 'sheet_filename': \
-                         self.xl_relationships[relation_id]['Target'],
+                                 'sheet_filename': os.path.join('xl',
+                         self.xl_relationships[relation_id]['Target']),
                                  'sheet_id': sheet_id,
                                  'xml': xml}
 
@@ -89,8 +89,7 @@ class ExcelXMLMangler(object):
         self.files['xl/workbook.xml'] = etree.tostring(\
             self.workbook_xml()[0])
         new_rel_file = self.calc_rel_file(new_filename)
-        old_rel_file = os.path.join('xl',
-                                   self.calc_rel_file(sheet['sheet_filename']))
+        old_rel_file = self.calc_rel_file(sheet['sheet_filename'])
         self.files[new_rel_file] = self.files[old_rel_file]
         new_xml = deepcopy(sheet['xml'])
         new_xml_str = etree.tostring(new_xml)

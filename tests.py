@@ -1,5 +1,5 @@
 import os
-import unittest
+import unittest2 as unittest
 import zipfile
 
 
@@ -11,7 +11,9 @@ class BaseTests(unittest.TestCase):
     def assertZipEquals(self, a, b):
         a = zipfile.ZipFile(a)
         b = zipfile.ZipFile(b)
-        self.assertEquals(len(a.filelist), len(b.filelist))
+        filename = lambda x: x.filename
+        self.assertEquals(map(filename, a.filelist),
+                          map(filename, b.filelist))
         self.assertTrue(len(a.filelist) > 0)
         for filename_a, filename_b in zip(a.filelist, b.filelist):
             self.assertEquals(a.open(filename_a).read(),
@@ -48,7 +50,8 @@ class BaseTests(unittest.TestCase):
         filler.save(tmpfile)
         #tmpfile.seek(0)
         #file('test_result_sheet_reshuffled.xlsx', 'w').write(tmpfile.read())
-        self.assertZipEquals(file('test_result_sheet_reshuffled.xlsx'), tmpfile)
+        self.assertZipEquals(file('test_result_sheet_reshuffled.xlsx'),
+                             tmpfile)
 
     def test_add_rows(self):
         """
@@ -58,6 +61,22 @@ class BaseTests(unittest.TestCase):
         # XXX test for xlsx sheets without images inside!
         # XXX test for sparse rows!
         filler = self.get_mangler()
+        filler.copySheet('Fancyname', 'Fancycopy')
+        schema = [('field1', 'url'), ('field2', 'string'),
+                  ('field3', 'string')]
+        data = [(('http://wwww.example.com'), 'example', 'ex1', 'ex2'),
+                (('http://www.example.com/2'), 'example', 'ex3', 'ex4')]
+        filler.addRows('Fancycopy', schema, data)
+        tmpfile = os.tmpfile()
+        filler.save(tmpfile)
+        #tmpfile.seek(0)
+        #file('test_result_rows_added.xlsx', 'w').write(tmpfile.read())
+        self.assertZipEquals(file('test_result_rows_added.xlsx'), tmpfile)
+
+    def test_add_rows_to_copied_sheet(self):
+        """
+        """
+        filler = self.get_mangler()
         schema = [('field1', 'url'), ('field2', 'string'),
                   ('field3', 'string')]
         data = [(('http://wwww.example.com'), 'example', 'ex1', 'ex2'),
@@ -66,8 +85,9 @@ class BaseTests(unittest.TestCase):
         tmpfile = os.tmpfile()
         filler.save(tmpfile)
         #tmpfile.seek(0)
-        #file('test_result_rows_added.xlsx', 'w').write(tmpfile.read())
-        self.assertZipEquals(file('test_result_rows_added.xlsx'), tmpfile)
+        #file('test_result_rows_added_to_copy.xlsx', 'w').write(tmpfile.read())
+        self.assertZipEquals(file('test_result_rows_added_to_copy.xlsx'),
+                             tmpfile)
 
     def test_rename_single_column(self):
         """
