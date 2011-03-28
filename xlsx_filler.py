@@ -150,9 +150,16 @@ class ExcelXMLMangler(object):
         sheet.xpath('//main:c[main:v=\'%s\']/main:v' % old, namespaces=self.NAMESPACES)[0].text = str(new)
         self.files[filename] = etree.tostring(sheet)
 
-    def delete_row(self, sheet, row):
-        row = sheet.xpath('//main:row[@r=\'%s\']' % row, namespaces=self.NAMESPACES)[0]
-        row.getparent().remove(row)
+    def delete_row(self, sheet, row_number):
+        """
+        Delete the row with the given row number from the sheet
+        if it exists.
+        If it does not exist, do nothing
+        """
+        row = sheet.xpath('//main:row[@r=\'%s\']' % row_number,
+                          namespaces=self.NAMESPACES)
+        if len(row) == 1:
+            row[0].getparent().remove(row[0])
 
     def update_row_number(self, new_number, row):
         old_number = row.attrib['r']

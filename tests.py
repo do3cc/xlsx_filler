@@ -73,6 +73,28 @@ class BaseTests(unittest.TestCase):
         #file('test_result_rows_added.xlsx', 'w').write(tmpfile.read())
         self.assertZipEquals(file('test_result_rows_added.xlsx'), tmpfile)
 
+    def test_add_many_rows(self):
+        """
+        Test that adding lots of rows will not raise errors
+        """
+        # XXX test for xlsx sheets without images inside!
+        # XXX test for sparse rows!
+        filler = self.get_mangler()
+        filler.copySheet('Fancyname', 'Fancycopy')
+        schema = [('field1', 'url'), ('field2', 'string'),
+                  ('field3', 'string')]
+        data = [(('http://wwww.example.com'), 'example', 'ex1', 'ex2')
+                for ignore in range(100)]
+
+        filler.addRows('Fancycopy', schema, data)
+        tmpfile = os.tmpfile()
+        filler.save(tmpfile)
+        tmpfile.seek(0)
+        file('test_result_rows_added_many_rows.xlsx',
+             'w').write(tmpfile.read())
+        self.assertZipEquals(file('test_result_rows_added_many_rows.xlsx'),
+                             tmpfile)
+
     def test_add_rows_to_copied_sheet(self):
         """
         """
