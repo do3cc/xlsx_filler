@@ -40,6 +40,34 @@ class BaseTests(unittest.TestCase):
         #file('test_result_sheet_copy.xlsx', 'w').write(tmpfile.read())
         self.assertZipEquals(file('test_result_sheet_copy.xlsx'), tmpfile)
 
+    def test_delete_sheet(self):
+        """
+        Try to delete a sheet
+        """
+        filler = self.get_mangler()
+        filler.copySheet('Fancyname', 'Fancycopy')
+        filler.delete_sheet('Fancyname')
+        tmpfile = os.tmpfile()
+        filler.save(tmpfile)
+        #tmpfile.seek(0)
+        #file('test_result_delete_sheet.xlsx', 'w').write(tmpfile.read())
+        self.assertZipEquals(file('test_result_delete_sheet.xlsx'), tmpfile)
+
+    def test_multiple_sheet_copy(self):
+        """
+        Try to copy a sheet multiple times.
+        """
+        filler = self.get_mangler()
+        filler.copySheet('Fancyname', 'Fancycopy')
+        filler.copySheet('Fancyname', 'Fancycopy2')
+        tmpfile = os.tmpfile()
+        filler.save(tmpfile)
+        #tmpfile.seek(0)
+        #file('test_result_multiple_sheet_copy.xlsx', 'w').write(
+        #    tmpfile.read())
+        self.assertZipEquals(file('test_result_multiple_sheet_copy.xlsx'),
+                             tmpfile)
+
     def test_sheet_shuffling(self):
         """
         Try to change the sheet ordering

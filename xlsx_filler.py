@@ -1,8 +1,31 @@
+import re
 import os
 import zipfile
 from StringIO import StringIO
 from copy import deepcopy
 from lxml import etree
+
+convert_shared_strings_re = re.compile('<v>([0-9]+)</v>')
+
+
+def convert_shared_strings(xml_stream, shared_string_converter):
+    converter = lambda match: '<v>%s</v>' % \
+        shared_string_converter(match.group()[3:-4])
+    return convert_shared_strings_re.sub(converter, xml_stream)
+
+
+class ReferenceDataNotFound(Exception):
+    def __init__(self, hook, row, shared_string_converter_):
+        shared_string_converter = lambda x: shared_string_converter_(int(x))
+        msg_tmpl = "Unable to find the referenced string in the "\
+            "reference row.\n"\
+            "The string to replace seems to exist, but not in "\
+            "the reference row.\n"\
+            "refence: %s\n"\
+            "reference row: %s\n"
+        super(ReferenceDataNotFound, self).__init__(msg_tmpl % (
+                shared_string_converter(hook), convert_shared_strings(
+                    etree.tostring(row), shared_string_converter)))
 
 
 class ExcelXMLMangler(object):
@@ -18,8 +41,11 @@ class ExcelXMLMangler(object):
 
     def add_string(self, row, sheet, sheet_filename, hook, data):
         string_id = self.get_shared_string_ref(data)
-        row.xpath('//main:c[main:v=\'%s\']/main:v' % hook,
-                  namespaces=self.NAMESPACES)[0].text = str(string_id)
+        try:
+            row.xpath('//main:c[main:v=\'%s\']/main:v' % hook,
+                      namespaces=self.NAMESPACES)[0].text = str(string_id)
+        except IndexError:
+            raise ReferenceDataNotFound(hook, row, self.get_shared_string)
 
     def add_url(self, row, sheet, sheet_filename, hook, data):
         """
@@ -100,6 +126,13 @@ class ExcelXMLMangler(object):
                                      'xml': new_xml}
         del self._xl_relationships
 
+    def delete_sheet(self, sheet_name):
+        sheet_data = self.sheets.pop(sheet_name)
+        self.files.pop(sheet_data['sheet_filename'])
+        sheet = self.workbook_xml('//main:sheet[@name="%s"]' % sheet_name)
+        sheet[0].getparent().remove(sheet[0])
+        self.files['xl/workbook.xml'] = etree.tostring(self.workbook_xml()[0])
+
     def moveSheet(self, sheetName, newPos):
         self.sheets[sheetName]['sheetId'] = newPos
         sheet = self.workbook_xml('//main:sheet[@name=\'%s\']' % sheetName)[0]
@@ -167,6 +200,13 @@ class ExcelXMLMangler(object):
             child.attrib['r'] = child.attrib['r'].replace(old_number, new_number)
         row.attrib['r'] = new_number
 
+
+    def get_shared_string(self, ref_id):
+        if not hasattr(self, '_shared_strings'):
+            self._shared_strings = etree.fromstring(self.files['xl/sharedStrings.xml']).xpath('//main:t/text()', namespaces=self.NAMESPACES)
+        return self._shared_strings[ref_id]
+        
+
     def get_shared_string_ref(self, value):
         if not hasattr(self, '_shared_strings'):
             self._shared_strings = etree.fromstring(self.files['xl/sharedStrings.xml']).xpath('//main:t/text()', namespaces=self.NAMESPACES)
@@ -218,8 +258,10 @@ class ExcelXMLMangler(object):
             'Type': type_def,
             'Target': new_filename,
             }
-        return self.new_relation('xl/_rels/workbook.xml.rels', attribs),\
+        retval = self.new_relation('xl/_rels/workbook.xml.rels', attribs),\
             'xl/' + new_filename
+        del self._workbook_rels_xml
+        return retval
 
     def new_relation(self, filename, attribs):
         xml = etree.fromstring(self.files[filename])
