@@ -9,6 +9,13 @@ class BaseTests(unittest.TestCase):
         return ExcelXMLMangler('test.xlsx')
 
     def assertZipEquals(self, a, b):
+        from lxml import etree
+        def beauty_compare(file_ob):
+            data = file_ob.read()
+            if data.startswith('<?xml'):
+                return etree.tostring(etree.fromstring(data)).strip()
+            else:
+                return data.strip()
         a = zipfile.ZipFile(a)
         b = zipfile.ZipFile(b)
         filename = lambda x: x.filename
@@ -16,8 +23,9 @@ class BaseTests(unittest.TestCase):
                           map(filename, b.filelist))
         self.assertTrue(len(a.filelist) > 0)
         for filename_a, filename_b in zip(a.filelist, b.filelist):
-            self.assertEquals(a.open(filename_a).read(),
-                              b.open(filename_b).read())
+            data_a = beauty_compare(a.open(filename_a))
+            data_b = beauty_compare(b.open(filename_b))
+            self.assertEquals(data_a, data_b)
 
     def test_loading(self):
         """
@@ -92,8 +100,8 @@ class BaseTests(unittest.TestCase):
         filler.copy_sheet('Fancyname', 'Fancycopy')
         schema = [('field1', 'url'), ('field2', 'string'),
                   ('field3', 'string')]
-        data = [(('http://wwww.example.com'), 'example', 'ex1', 'ex2'),
-                (('http://www.example.com/2'), 'example', 'ex3', 'ex4')]
+        data = [(('http://wwww.example.com', 'link'), 'example', 'ex1', 'ex2'),
+                (('http://www.example.com/2', 'link2'), 'example', 'ex3', 'ex4')]
         filler.add_rows('Fancycopy', schema, data)
         tmpfile = os.tmpfile()
         filler.save(tmpfile)
@@ -111,7 +119,7 @@ class BaseTests(unittest.TestCase):
         filler.copy_sheet('Fancyname', 'Fancycopy')
         schema = [('field1', 'url'), ('field2', 'string'),
                   ('field3', 'string')]
-        data = [(('http://wwww.example.com'), 'example', 'ex1', 'ex2')
+        data = [(('http://wwww.example.com', 'link'), 'example', 'ex1', 'ex2')
                 for ignore in range(100)]
 
         filler.add_rows('Fancycopy', schema, data)
@@ -129,8 +137,8 @@ class BaseTests(unittest.TestCase):
         filler = self.get_mangler()
         schema = [('field1', 'url'), ('field2', 'string'),
                   ('field3', 'string')]
-        data = [(('http://wwww.example.com'), 'example', 'ex1', 'ex2'),
-                (('http://www.example.com/2'), 'example', 'ex3', 'ex4')]
+        data = [(('http://wwww.example.com', 'link'), 'example', 'ex1', 'ex2'),
+                (('http://www.example.com/2', 'link2'), 'example', 'ex3', 'ex4')]
         filler.add_rows('Fancyname', schema, data)
         tmpfile = os.tmpfile()
         filler.save(tmpfile)
