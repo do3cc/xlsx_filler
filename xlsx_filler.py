@@ -166,7 +166,7 @@ class ExcelXMLMangler(object):
         sheetdata = sheet.xpath1('main:sheetData')
         tmpl_row = sheet.xpath1('//main:c[main:v=\'%s\']/..' % hook)
         start_row_number = int(tmpl_row.attrib['r'])
-        summary_row = tmpl_row.getnext()
+        #summary_row = tmpl_row.getnext()
         head = map(lambda x: (self._get_shared_string_ref(x[0]), x[1]), head)
 
         for index, new_row_data in enumerate(data):
@@ -184,8 +184,8 @@ class ExcelXMLMangler(object):
             sheetdata.insert(new_row_number, new_row)
         new_row_number = start_row_number + index + 1
         self.delete_row(sheet, new_row_number)
-        self._update_row_number(str(new_row_number), summary_row)
-        sheetdata.insert(new_row_number - 1, summary_row)
+        #self._update_row_number(str(new_row_number), summary_row)
+        #sheetdata.insert(new_row_number - 1, summary_row)
 
     def replace_value(self, sheetName, old, new):
         filename = self.sheets[sheetName]['sheet_filename']
