@@ -33,7 +33,7 @@ class BaseTests(unittest.TestCase):
         # XXX This will fail if the xlsx sheet does not have any link or
         # relation to anything. Test it!
         filler = self.get_mangler()
-        filler.copySheet('Fancyname', 'Fancycopy')
+        filler.copy_sheet('Fancyname', 'Fancycopy')
         tmpfile = os.tmpfile()
         filler.save(tmpfile)
         #tmpfile.seek(0)
@@ -45,7 +45,7 @@ class BaseTests(unittest.TestCase):
         Try to delete a sheet
         """
         filler = self.get_mangler()
-        filler.copySheet('Fancyname', 'Fancycopy')
+        filler.copy_sheet('Fancyname', 'Fancycopy')
         filler.delete_sheet('Fancyname')
         tmpfile = os.tmpfile()
         filler.save(tmpfile)
@@ -58,8 +58,8 @@ class BaseTests(unittest.TestCase):
         Try to copy a sheet multiple times.
         """
         filler = self.get_mangler()
-        filler.copySheet('Fancyname', 'Fancycopy')
-        filler.copySheet('Fancyname', 'Fancycopy2')
+        filler.copy_sheet('Fancyname', 'Fancycopy')
+        filler.copy_sheet('Fancyname', 'Fancycopy2')
         tmpfile = os.tmpfile()
         filler.save(tmpfile)
         #tmpfile.seek(0)
@@ -73,7 +73,7 @@ class BaseTests(unittest.TestCase):
         Try to change the sheet ordering
         """
         filler = self.get_mangler()
-        filler.moveSheet('Fancyname', '99')
+        filler.move_sheet('Fancyname', '99')
         tmpfile = os.tmpfile()
         filler.save(tmpfile)
         #tmpfile.seek(0)
@@ -89,12 +89,12 @@ class BaseTests(unittest.TestCase):
         # XXX test for xlsx sheets without images inside!
         # XXX test for sparse rows!
         filler = self.get_mangler()
-        filler.copySheet('Fancyname', 'Fancycopy')
+        filler.copy_sheet('Fancyname', 'Fancycopy')
         schema = [('field1', 'url'), ('field2', 'string'),
                   ('field3', 'string')]
         data = [(('http://wwww.example.com'), 'example', 'ex1', 'ex2'),
                 (('http://www.example.com/2'), 'example', 'ex3', 'ex4')]
-        filler.addRows('Fancycopy', schema, data)
+        filler.add_rows('Fancycopy', schema, data)
         tmpfile = os.tmpfile()
         filler.save(tmpfile)
         #tmpfile.seek(0)
@@ -108,18 +108,18 @@ class BaseTests(unittest.TestCase):
         # XXX test for xlsx sheets without images inside!
         # XXX test for sparse rows!
         filler = self.get_mangler()
-        filler.copySheet('Fancyname', 'Fancycopy')
+        filler.copy_sheet('Fancyname', 'Fancycopy')
         schema = [('field1', 'url'), ('field2', 'string'),
                   ('field3', 'string')]
         data = [(('http://wwww.example.com'), 'example', 'ex1', 'ex2')
                 for ignore in range(100)]
 
-        filler.addRows('Fancycopy', schema, data)
+        filler.add_rows('Fancycopy', schema, data)
         tmpfile = os.tmpfile()
         filler.save(tmpfile)
-        tmpfile.seek(0)
-        file('test_result_rows_added_many_rows.xlsx',
-             'w').write(tmpfile.read())
+        #tmpfile.seek(0)
+        #file('test_result_rows_added_many_rows.xlsx',
+        #     'w').write(tmpfile.read())
         self.assertZipEquals(file('test_result_rows_added_many_rows.xlsx'),
                              tmpfile)
 
@@ -131,7 +131,7 @@ class BaseTests(unittest.TestCase):
                   ('field3', 'string')]
         data = [(('http://wwww.example.com'), 'example', 'ex1', 'ex2'),
                 (('http://www.example.com/2'), 'example', 'ex3', 'ex4')]
-        filler.addRows('Fancyname', schema, data)
+        filler.add_rows('Fancyname', schema, data)
         tmpfile = os.tmpfile()
         filler.save(tmpfile)
         #tmpfile.seek(0)
@@ -144,7 +144,7 @@ class BaseTests(unittest.TestCase):
         Test the renaming of a single column
         """
         filler = self.get_mangler()
-        filler.replaceValue('Fancyname', '<examplereplacement>', 'no example')
+        filler.replace_value('Fancyname', '<examplereplacement>', 'no example')
         tmpfile = os.tmpfile()
         filler.save(tmpfile)
         #tmpfile.seek(0)

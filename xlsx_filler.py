@@ -101,7 +101,7 @@ class ExcelXMLMangler(object):
             target.writestr(filename, self.files[filename])
         target.close()
 
-    def copySheet(self, source_sheet, target_sheet):
+    def copy_sheet(self, source_sheet, target_sheet):
         sheet = self.sheets[source_sheet]
         new_relation_id, new_filename = self.new_sheet_relation()
         new_id = str(reduce(lambda a, b: max(a, int(b['sheet_id'])),
@@ -133,7 +133,7 @@ class ExcelXMLMangler(object):
         sheet[0].getparent().remove(sheet[0])
         self.files['xl/workbook.xml'] = etree.tostring(self.workbook_xml()[0])
 
-    def moveSheet(self, sheetName, newPos):
+    def move_sheet(self, sheetName, newPos):
         self.sheets[sheetName]['sheetId'] = newPos
         sheet = self.workbook_xml('//main:sheet[@name=\'%s\']' % sheetName)[0]
         sheets = self.workbook_xml('//main:sheets')[0]
@@ -147,7 +147,7 @@ class ExcelXMLMangler(object):
         self.files['xl/workbook.xml'] = etree.tostring(\
             self.workbook_xml()[0])
 
-    def addRows(self, sheetName, head, data):
+    def add_rows(self, sheetName, head, data):
         hook = self.get_shared_string_ref(head[0][0])
         sheet = self.sheets[sheetName]['xml']
         sheetdata = sheet.xpath('main:sheetData', namespaces=self.NAMESPACES)[0]
@@ -175,7 +175,7 @@ class ExcelXMLMangler(object):
         sheetdata.insert(new_row_number - 1, summary_row)
         self.files[filename] = etree.tostring(sheet)
 
-    def replaceValue(self, sheetName, old, new):
+    def replace_value(self, sheetName, old, new):
         sheet = self.sheets[sheetName]['xml']
         filename = self.sheets[sheetName]['sheet_filename']
         old = self.get_shared_string_ref(old)
@@ -200,12 +200,10 @@ class ExcelXMLMangler(object):
             child.attrib['r'] = child.attrib['r'].replace(old_number, new_number)
         row.attrib['r'] = new_number
 
-
     def get_shared_string(self, ref_id):
         if not hasattr(self, '_shared_strings'):
             self._shared_strings = etree.fromstring(self.files['xl/sharedStrings.xml']).xpath('//main:t/text()', namespaces=self.NAMESPACES)
         return self._shared_strings[ref_id]
-        
 
     def get_shared_string_ref(self, value):
         if not hasattr(self, '_shared_strings'):
